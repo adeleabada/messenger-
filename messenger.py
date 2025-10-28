@@ -20,6 +20,7 @@ server = {
 }
 users= server['users']
 channels= server['channels']
+messages= server['messages']
 print('=== Messenger ===')
 print( '1. see users')
 print('2. see channels')
@@ -34,9 +35,15 @@ elif choice =='1':
         print (user['id'], user['name']) 
     print ('n.create user')
     print ('x.Main menu')
-    choice1 = input('Enter a choice and press ENTER: ')           
+    choice1 = input('Enter a choice and press ENTER: ')         
 elif choice=='2':
     for channel in channels:
         print(channel['id'], channel['name'])
+    choice2 = int(input('choose group: '))
+    for message in messages:
+        if choice2 == message['channel']:
+            print(message['sender_id'],message['content'])
+        else:
+            print ("no group")
 else:
     print('Unknown option:', choice)
