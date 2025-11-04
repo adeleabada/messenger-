@@ -1,10 +1,13 @@
 from datetime import datetime
 import json
 
-with open('server.json', 'r')as fichier:
+with open("server.json", "r") as fichier:
     server=json.load(fichier)
 print (server)
 
+def sauvegarder(new_server):
+    with open ("server.json","w") as fichier:
+        json.dump(new_server, fichier , ensure_ascii=False, indent=4)
 
 
 users= server['users']
@@ -17,7 +20,6 @@ def id_name(nom):
         if nom==user:
             idnom=user['id']
             return idnom
-
 
 def menu():
     print('=== Messenger ===')
@@ -36,7 +38,6 @@ def menu():
     else:
         print('Unknown option:', choice)
 
-
 def user():
     for user in users:
         print (user['id'], user['name']) 
@@ -52,6 +53,7 @@ def user():
             user_ids.append(user['id'])
         newid= max(user_ids)+1
         users.append ( {'id':newid,'name':name })
+        sauvegarder(server)
         print(users)
 
 def newgroup():
@@ -60,18 +62,16 @@ def newgroup():
     id_menbres=[]
     nb_pers= int(input('combien utilisateurs'))
     for i in range (0,nb_pers):
-        id_pers=int(input('Id du membre'))
+        id_pers=int(input('Id du membre')) 
         id_menbres.append(id_pers)
     channel_ids=[]
     for channel in channels:
         channel_ids.append(channel['id'])
     newgroup_id= max(channel_ids)+1
     channels.append ( {'id':newgroup_id,'name':groupname,'menbers_ids':id_menbres})
+    sauvegarder(server)
     print(channels)
      
-
-
-
 def channel():
     for channel in channels:
         print(channel['id'], channel['name'])
@@ -92,11 +92,5 @@ def channel():
         newgroup()
         
 
-
-    
-
-
-
 menu()
-
 
