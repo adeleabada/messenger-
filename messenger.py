@@ -1,23 +1,12 @@
 from datetime import datetime
+import json
 
-server = {
-    'users': [
-        {'id': 41, 'name': 'Alice'},
-        {'id': 23, 'name': 'Bob'}
-    ],
-    'channels': [
-        {'id': 12, 'name': 'Town square', 'member_ids': [41, 23]}
-    ],
-    'messages': [
-        {
-            'id': 18,
-            'reception_date': datetime.now(),
-            'sender_id': 41,
-            'channel': 12,
-            'content': 'Hi 👋'
-        }
-    ]
-}
+with open('server.json', 'r')as fichier:
+    server=json.load(fichier)
+print (server)
+
+
+
 users= server['users']
 channels= server['channels']
 messages= server['messages']
