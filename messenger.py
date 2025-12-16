@@ -30,7 +30,7 @@ with open("server.json", "r") as fichier:
     channel_list:list[Channels]=[]
     message_list:list[Messages]=[]
     for user in server['users']:
-        user_list.append (User(user['name'],user['id']))
+        user_list.append (User(user['id'],user['name']))
         server['users']=user_list
     for channel in server['channels']:
         channel_list.append (Channels(channel['name'],channel['id'],channel['menbers_ids'] ))
@@ -45,9 +45,22 @@ channels= server['channels']
 messages= server['messages']
 
 def sauvegarder(new_server):
-    with open ("server.json","w") as fichier:
-        json.dump(new_server, fichier , ensure_ascii=False, indent=4)
-
+    server2 = {}
+    dico_user_list:list[dict]=[]
+    for user in server['users']:
+        dico_user_list.append({'name': user.name, 'id': user.id})
+        server2['users']= dico_user_list
+        dico_channel_list:list[dict]=[]
+    for channel in server['channels']:
+        dico_channel_list.append({'name': channel.name, 'id': channel.id, 'menbers_ids': channel.menbers_ids})
+        server2['channels']= dico_channel_list
+        dico_mess_list:list[dict]=[]
+    for mess in server['messages']:
+        dico_mess_list.append({ "id": mess.id, "reception_date": mess.reception_date, "sender_id": mess.sender_id, "channel": mess.channel, "content": mess.content})
+        server2['messages']=dico_mess_list
+    print(server2)
+    with open('server.json', 'w') as fichier:
+        json.dump(server2, fichier, indent=4)
 
 
 def id_name(nom): #donne l'identifiant à partir du nom
@@ -98,7 +111,8 @@ def user():
         for user in users:
             user_ids.append(user.id)
         newid= max(user_ids)+1
-        users.append ( {'id':newid,'name':name })
+        usnew= User (newid,name )
+        users.append( usnew)
         sauvegarder(server)
         print(users)
 
@@ -114,7 +128,8 @@ def newgroup():
     for channel in channels:
         channel_ids.append(channel.id)
     newgroup_id= max(channel_ids)+1
-    channels.append ( {'id':newgroup_id,'name':groupname,'menbers_ids':id_menbres})
+    gpnew=Channels(newgroup_id,groupname,id_menbres)
+    channels.append (gpnew)
     sauvegarder(server)
     print(channels)
 
@@ -126,13 +141,7 @@ def newmessages(user_id):
 
     gp = int(input('Donner l \'indentifiant du groupe '))
     texte= input('write a message')
-    new_message={
-        'id':int(len(messages)+1),
-        'channel': gp,
-        'sender_id':user_id,
-        'content':texte,
-        'reception_date':datetime.now().isoformat()
-    }
+    new_message= Messages(gp, int(len(messages)+1),texte,user_id, datetime.now().isoformat())
     messages.append(new_message)
     sauvegarder(server)
     print("1.send another message")
