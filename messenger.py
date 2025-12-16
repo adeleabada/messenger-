@@ -1,29 +1,64 @@
 from datetime import datetime
 import json
 
+
+
+class User:
+    def __init__(self, id:int,name:str):
+        self.id=id
+        self.name=name
+class Channels:
+    def __init__(self,name:str,id:int, menbers_ids:list):
+        self.name=name
+        self.id=id
+        self.menbers_ids= menbers_ids
+class Messages:
+    def __init__(self,channel:int,id:int, content:str, sender_id:int, reception_date: str):
+        self.channel=channel
+        self.id=id 
+        self.content=content
+        self.sender_id=sender_id
+        self.reception_date=reception_date
+
+
+
+
+
 with open("server.json", "r") as fichier:
     server=json.load(fichier)
-print (server)
+    user_list:list[User]=[]
+    channel_list:list[Channels]=[]
+    message_list:list[Messages]=[]
+    for user in server['users']:
+        user_list.append (User(user['name'],user['id']))
+        server['users']=user_list
+    for channel in server['channels']:
+        channel_list.append (Channels(channel['name'],channel['id'],channel['menbers_ids'] ))
+        server['channels']=channel_list
+    for message in server['messages']:
+        print (message)
+        message_list.append (Messages (message['content'],message['reception_date'],message ['sender_id'],message ['id'], message['channel']))
+        server['messages']=message_list
+
+users= server['users']
+channels= server['channels']
+messages= server['messages']
 
 def sauvegarder(new_server):
     with open ("server.json","w") as fichier:
         json.dump(new_server, fichier , ensure_ascii=False, indent=4)
 
 
-users= server['users']
-channels= server['channels']
-messages= server['messages']
-
 
 def id_name(nom): #donne l'identifiant à partir du nom
     for user in users:
-        if nom==user['name']:
-            idnom=user['id']
+        if nom==user.name:
+            idnom=user.id
             return idnom
 def name_id(id):#donne le nom a parti de l'identifiant
     for user in users:
-        if id==user['id']:
-            nomid=user['name']
+        if id==user.id:
+            nomid=user.name
             return nomid
         
 def menu():
@@ -51,7 +86,7 @@ def menu():
 
 def user():
     for user in users:
-        print (user['id'], user['name']) 
+        print (user.id, user.name) 
     print ('n.create user')
     print ('x.Main menu')
     choice1 = input('Enter a choice and press ENTER: ')
@@ -61,7 +96,7 @@ def user():
         name=input('Name: ')
         user_ids=[]
         for user in users:
-            user_ids.append(user['id'])
+            user_ids.append(user.id)
         newid= max(user_ids)+1
         users.append ( {'id':newid,'name':name })
         sauvegarder(server)
@@ -77,7 +112,7 @@ def newgroup():
         id_menbres.append(id_pers)
     channel_ids=[]
     for channel in channels:
-        channel_ids.append(channel['id'])
+        channel_ids.append(channel.id)
     newgroup_id= max(channel_ids)+1
     channels.append ( {'id':newgroup_id,'name':groupname,'menbers_ids':id_menbres})
     sauvegarder(server)
@@ -86,8 +121,8 @@ def newgroup():
 def newmessages(user_id):
     print('voici les groupes ou vous etes:')
     for channel in channels:
-        if user_id in channel['menbers_ids']:
-            print(channel['id'],channel['name'],channel['menbers_ids'])
+        if user_id in channel.menbers_ids:
+            print(channel.id,channel.name,channel.menbers_ids)
 
     gp = int(input('Donner l \'indentifiant du groupe '))
     texte= input('write a message')
@@ -108,13 +143,9 @@ def newmessages(user_id):
     elif choicem=='x':
         menu()
 
-
-
-
-
 def channel():
     for channel in channels:
-        print(channel['id'], channel['name'])
+        print(channel.id, channel.name)
     
     print("1.choose group")
     print("2.New group")
@@ -123,14 +154,14 @@ def channel():
     if choice2=='1':  
         choice22=int(input("group number"))
         for channel in channels: #on parcourt les channels si on en un id qui match on sort de la boucle avec break ( on a utilisé un for else) 
-            if choice22 == channel['id']:
+            if choice22 == channel.id:
                 print(channel)
-                for ids in channel['menbers_ids']: # on transforme l'id en nom
+                for ids in channel.menbers_ids: # on transforme l'id en nom
                     print(name_id(ids))
                     
                     for message in messages:
-                        if choice22== message["channel"]:  #on affiche le message 
-                            print (message['content'])
+                        if choice22== message.channel:  #on affiche le message 
+                            print (message.content)
                     break
             break
         else:  
