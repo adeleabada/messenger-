@@ -39,12 +39,20 @@ class RemoteStorage:
         jsonname={'name':name}
         envoi=requests.post('https://groupe5-python-mines.fr/users/create', json=jsonname)
         print(envoi.text,envoi.status_code)
-       
 
+    def get_channels()->list[Channels]:
+        response_gp = requests.get('https://groupe5-python-mines.fr/channels')
+       
+        data = json.loads(response_gp.text)
+        channels: list[Channels] = []
+        for u in data:
+             menbersid=requests.get(f'https://groupe5-python-mines.fr/{channel['id']}/channels/')
+            channels.append(Channels(channel['name'],channel['id'],menbersid ))
+        return channels
 
 print(RemoteStorage.get_users())
 
-
+RemoteStorage.get_channels()
 
 
 
