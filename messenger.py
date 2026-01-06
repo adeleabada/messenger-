@@ -1,5 +1,6 @@
 from datetime import datetime
 import json
+import requests
 
 
 
@@ -7,6 +8,10 @@ class User:
     def __init__(self, id:int,name:str):
         self.id=id
         self.name=name
+    def __repr__(self)->str:
+        return "user("+self.name+")"
+        
+        return
 class Channels:
     def __init__(self,name:str,id:int, menbers_ids:list):
         self.name=name
@@ -19,6 +24,27 @@ class Messages:
         self.content=content
         self.sender_id=sender_id
         self.reception_date=reception_date
+
+class RemoteStorage:
+ 
+    def get_users() -> list[User]:
+        response = requests.get('https://groupe5-python-mines.fr/users')
+        data = json.loads(response.text)
+        users: list[User] = []
+        for u in data:
+            users.append(User(u["id"], u["name"]))
+        return users
+    
+    def create_users(name):
+        jsonname={'name':name}
+        envoi=requests.post('https://groupe5-python-mines.fr/users/create', json=jsonname)
+        print(envoi.text,envoi.status_code)
+       
+
+
+print(RemoteStorage.get_users())
+
+
 
 
 
@@ -98,7 +124,7 @@ def menu():
         print('Unknown option:', choice)
 
 def user():
-    for user in users:
+    for user in RemoteStorage.get_users():
         print (user.id, user.name) 
     print ('n.create user')
     print ('x.Main menu')
@@ -107,14 +133,7 @@ def user():
           menu()
     if choice1=='n':
         name=input('Name: ')
-        user_ids=[]
-        for user in users:
-            user_ids.append(user.id)
-        newid= max(user_ids)+1
-        usnew= User (newid,name )
-        users.append( usnew)
-        sauvegarder(server)
-        print(users)
+        RemoteStorage.create_users(name)
 
 def newgroup():
     groupname= input ('Group Name')
