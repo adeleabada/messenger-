@@ -45,14 +45,26 @@ class RemoteStorage:
        
         data = json.loads(response_gp.text)
         channels: list[Channels] = []
-        for u in data:
-             menbersid=requests.get(f'https://groupe5-python-mines.fr/{channel['id']}/channels/')
-            channels.append(Channels(channel['name'],channel['id'],menbersid ))
+        for channel in data:
+            menbersid=requests.get(f'https://groupe5-python-mines.fr/{channel['id']}/channels/')
+            data=json.loads(menbersid.text)
+            channels.append(Channels(channel['name'],channel['id'], data ))
         return channels
+    def create_channels(name)-> int:
+        jsonname={'name':name}
+        send=requests.post('https://groupe5-python-mines.fr/channels/create', json=jsonname)
+        channel_dict=send.json()
+        return channel_dict['id']
 
-print(RemoteStorage.get_users())
+    def join_channel(id:int,menbers_id:int):
+        menbers_id_dict={'user_id': menbers_id}
+        envoi=requests.post(f'https://groupe5-python-mines.fr/channels/{id}/join', json=menbers_id_dict)
+        print(envoi.text,envoi.status_code)
+    def new_message(id,sender:int,texte: str):
+        group_id_dict={'sender_id':sender,"content":texte}
+        envoi=requests.post(f'https://groupe5-python-mines.fr/channels/{id}/messages/post', json=group_id_dict)
+        print(envoi.text)
 
-RemoteStorage.get_channels()
 
 
 
@@ -131,6 +143,18 @@ def menu():
     else:
         print('Unknown option:', choice)
 
+def add_menber(channel_id):   
+    for user in RemoteStorage.get_users():
+        print (user.id, user.name)
+
+    nb_pers= int(input('combien utilisateurs'))
+    for i in range (0,nb_pers):
+        id_pers=int(input('Id du membre')) 
+        RemoteStorage.join_channel(channel_id,id_pers)
+
+
+
+
 def user():
     for user in RemoteStorage.get_users():
         print (user.id, user.name) 
@@ -145,7 +169,8 @@ def user():
 
 def newgroup():
     groupname= input ('Group Name')
-    print (users)
+    for user in RemoteStorage.get_users():
+        print (user.id, user.name) 
     id_menbres=[]
     nb_pers= int(input('combien utilisateurs'))
     for i in range (0,nb_pers):
@@ -161,6 +186,7 @@ def newgroup():
     print(channels)
 
 def newmessages(user_id):
+    channels=RemoteStorage.get_channels()
     print('voici les groupes ou vous etes:')
     for channel in channels:
         if user_id in channel.menbers_ids:
@@ -180,8 +206,9 @@ def newmessages(user_id):
         menu()
 
 def channel():
+    channels=RemoteStorage.get_channels()
     for channel in channels:
-        print(channel.id, channel.name)
+        print (channel.id, channel.name) 
     
     print("1.choose group")
     print("2.New group")
@@ -194,12 +221,17 @@ def channel():
                 print(channel)
                 for ids in channel.menbers_ids: # on transforme l'id en nom
                     print(name_id(ids))
-                    
                     for message in messages:
                         if choice22== message.channel:  #on affiche le message 
                             print (message.content)
+                    print("1.add menbers")
+                    print("x. menu ")
+                    choice3 = input('Enter a choice and press ENTER: ')
+                    if choice3=='1':
+                        add_menber(choice22)
+                    if choice3=='x':
+                        menu()
                     break
-            break
         else:  
             print("no group")
 
@@ -207,7 +239,18 @@ def channel():
     elif choice2== 'x':
         menu()
     elif choice2 == '2':
-        newgroup()
+        name=input('Name: ')
+        channel_id=RemoteStorage.create_channels(name)
+
+        for user in RemoteStorage.get_users():
+            print (user.id, user.name)
+        
+        nb_pers= int(input('combien utilisateurs'))
+        for i in range (0,nb_pers):
+            id_pers=int(input('Id du membre')) 
+            RemoteStorage.join_channel(channel_id,id_pers)
+
+    
 
 
 
