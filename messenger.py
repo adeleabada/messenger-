@@ -4,6 +4,7 @@ import requests
 
 
 
+
 class User:
     def __init__(self, id:int,name:str):
         self.id=id
@@ -26,18 +27,20 @@ class Messages:
         self.reception_date=reception_date
 
 class LocalStorage:
-    def load_server():
+    def load_server(self):
         with open("server.json", "r") as fichier:
-        server=json.load(fichier)
-
-    def get_users() -> list[User]:
+            server=json.load(fichier)
+        return server
+    def get_users(self) -> list[User]:
+        server = self.load_server()
         print("les utilisaeurs sont:")
         user_list:list[User]=[]
-    for user in server['users']:
-        user_list.append (User(user['id'],user['name']))
+        for user in server['users']:
+            user_list.append (User(user['id'],user['name']))
         return user_list
 
-    def create_users(name):
+    def create_users(self,name):
+        server=self.load_server()
         user_ids=[]
         for user in users:
             user_ids.append(user.id)
@@ -46,35 +49,36 @@ class LocalStorage:
         users.append( usnew)
         sauvegarder(server)
 
-    def get_channels():
+    def get_channels(self):
+        server = self.load_server()
         print("les utilisaeurs sont:")
         channel_list:list[Channels]=[]
         for channel in server['channels']:
             channel_list.append (Channels(channel['name'],channel['id'],channel['menbers_ids'] ))
             server['channels']=channel_list
             return channel_list
-    def create_channels(name):
-        print (users)
+    def create_channels(self, name:str):
+        server=self.load_server()
         channel_ids=[]
-        for channel in channels:
-            channel_ids.append(channel.id)
+        for channel in server["channels"]:
+            channel_ids.append(channel['id'])
         newgroup_id= max(channel_ids)+1
         sauvegarder(server)
         return newgroup_id
     
-    def join_channel(channel_id,id_pers):
-        for channel in LocalStorage.get_channels():
-        if channel.id==channel_id:
-            nomid=channel.name
-            return nomid
-        gpnew=Channels(channel_id, nomid,id_menbres)
+    def join_channel(self,channel_id,id_pers):
+        server=self.load_server()
+        for channel in self.get_channels():
+            if channel.id==channel_id:
+                nomid=channel.name
+        gpnew=Channels(channel_id, nomid,id_pers)
         channels.append (gpnew)
         sauvegarder(server)
         
 
 class RemoteStorage:
 
-    def get_users() -> list[User]:
+    def get_users(self) -> list[User]:
         response = requests.get('https://groupe5-python-mines.fr/users')
         data = json.loads(response.text)
         users: list[User] = []
@@ -82,12 +86,12 @@ class RemoteStorage:
             users.append(User(u["id"], u["name"]))
         return users
     
-    def create_users(name):
+    def create_users(self,name):
         jsonname={'name':name}
         envoi=requests.post('https://groupe5-python-mines.fr/users/create', json=jsonname)
         print(envoi.text,envoi.status_code)
 
-    def get_channels()->list[Channels]:
+    def get_channels(self)->list[Channels]:
         response_gp = requests.get('https://groupe5-python-mines.fr/channels')
        
         data = json.loads(response_gp.text)
@@ -97,7 +101,7 @@ class RemoteStorage:
             data=json.loads(menbersid.text)
             channels.append(Channels(channel['name'],channel['id'], data ))
         return channels
-    def create_channels(name)-> int:
+    def create_channels(self, name)-> int:
         jsonname={'name':name}
         send=requests.post('https://groupe5-python-mines.fr/channels/create', json=jsonname)
         channel_dict=send.json()
@@ -107,14 +111,14 @@ class RemoteStorage:
         menbers_id_dict={'user_id': menbers_id}
         envoi=requests.post(f'https://groupe5-python-mines.fr/channels/{id}/join', json=menbers_id_dict)
         print(envoi.text,envoi.status_code)
-    def new_message(id,sender:int,texte: str):47
+
+    def new_message(id,sender:int,texte: str):
         group_id_dict={'sender_id':sender,"content":texte}
         envoi=requests.post(f'https://groupe5-python-mines.fr/channels/{id}/messages/post', json=group_id_dict)
         print(envoi.text)
 
 
-
-
+storage=LocalStorage()
 
 
 with open("server.json", "r") as fichier:
@@ -191,19 +195,19 @@ def menu():
         print('Unknown option:', choice)
 
 def add_menber(channel_id):   
-    for user in RemoteStorage.get_users():
+    for user in storage.get_users():
         print (user.id, user.name)
 
     nb_pers= int(input('combien utilisateurs'))
     for i in range (0,nb_pers):
         id_pers=int(input('Id du membre')) 
-        RemoteStorage.join_channel(channel_id,id_pers)
+        storage.join_channel(channel_id,id_pers)
 
 
 
 
 def user():
-    for user in RemoteStorage.get_users():
+    for user in storage.get_users():
         print (user.id, user.name) 
     print ('n.create user')
     print ('x.Main menu')
@@ -212,11 +216,11 @@ def user():
           menu()
     if choice1=='n':
         name=input('Name: ')
-        RemoteStorage.create_users(name)
+        storage.create_users(name)
 
 def newgroup():
     groupname= input ('Group Name')
-    for user in RemoteStorage.get_users():
+    for user in storage.get_users():
         print (user.id, user.name) 
     id_menbres=[]
     nb_pers= int(input('combien utilisateurs'))
@@ -233,7 +237,7 @@ def newgroup():
     print(channels)
 
 def newmessages(user_id):
-    channels=RemoteStorage.get_channels()
+    channels=storage.get_channels()
     print('voici les groupes ou vous etes:')
     for channel in channels:
         if user_id in channel.menbers_ids:
@@ -253,7 +257,7 @@ def newmessages(user_id):
         menu()
 
 def channel():
-    channels=RemoteStorage.get_channels()
+    channels=storage.get_channels()
     for channel in channels:
         print (channel.id, channel.name) 
     
@@ -287,26 +291,28 @@ def channel():
         menu()
     elif choice2 == '2':
         name=input('Name: ')
-        channel_id=RemoteStorage.create_channels(name)
+        channel_id=storage.create_channels(name)
 
-        for user in RemoteStorage.get_users():
+        for user in storage.get_users():
             print (user.id, user.name)
         
         nb_pers= int(input('combien utilisateurs'))
         for i in range (0,nb_pers):
             id_pers=int(input('Id du membre')) 
-            RemoteStorage.join_channel(channel_id,id_pers)
+            storage.join_channel(channel_id,id_pers)
 
     
-
-
-
-
-
-
-
-
-
-
 menu()
 
+import argparse
+
+def main():
+    parser = argparse.ArgumentParser(description="programme qui permet d'envoyer des messages d'un ordinateur à l'autre en passent par un serveur")
+
+
+    args = parser.parse_args()
+
+    print("Le programme s'est exécuté normalement.")
+
+if __name__ == "__main__":
+    main()
