@@ -25,8 +25,55 @@ class Messages:
         self.sender_id=sender_id
         self.reception_date=reception_date
 
+class LocalStorage:
+    def load_server():
+        with open("server.json", "r") as fichier:
+        server=json.load(fichier)
+
+    def get_users() -> list[User]:
+        print("les utilisaeurs sont:")
+        user_list:list[User]=[]
+    for user in server['users']:
+        user_list.append (User(user['id'],user['name']))
+        return user_list
+
+    def create_users(name):
+        user_ids=[]
+        for user in users:
+            user_ids.append(user.id)
+        newid= max(user_ids)+1
+        usnew= User (newid,name )
+        users.append( usnew)
+        sauvegarder(server)
+
+    def get_channels():
+        print("les utilisaeurs sont:")
+        channel_list:list[Channels]=[]
+        for channel in server['channels']:
+            channel_list.append (Channels(channel['name'],channel['id'],channel['menbers_ids'] ))
+            server['channels']=channel_list
+            return channel_list
+    def create_channels(name):
+        print (users)
+        channel_ids=[]
+        for channel in channels:
+            channel_ids.append(channel.id)
+        newgroup_id= max(channel_ids)+1
+        sauvegarder(server)
+        return newgroup_id
+    
+    def join_channel(channel_id,id_pers):
+        for channel in LocalStorage.get_channels():
+        if channel.id==channel_id:
+            nomid=channel.name
+            return nomid
+        gpnew=Channels(channel_id, nomid,id_menbres)
+        channels.append (gpnew)
+        sauvegarder(server)
+        
+
 class RemoteStorage:
- 
+
     def get_users() -> list[User]:
         response = requests.get('https://groupe5-python-mines.fr/users')
         data = json.loads(response.text)
@@ -60,7 +107,7 @@ class RemoteStorage:
         menbers_id_dict={'user_id': menbers_id}
         envoi=requests.post(f'https://groupe5-python-mines.fr/channels/{id}/join', json=menbers_id_dict)
         print(envoi.text,envoi.status_code)
-    def new_message(id,sender:int,texte: str):
+    def new_message(id,sender:int,texte: str):47
         group_id_dict={'sender_id':sender,"content":texte}
         envoi=requests.post(f'https://groupe5-python-mines.fr/channels/{id}/messages/post', json=group_id_dict)
         print(envoi.text)
