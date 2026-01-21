@@ -15,6 +15,10 @@
         {
             "name": "Ele",
             "id": 50
+        },
+        {
+            "name": "Emilie",
+            "id": 51
         }
     ],
     "channels": [
@@ -33,6 +37,16 @@
                 "41",
                 "49"
             ]
+        },
+        {
+            "name": 12,
+            "id": "Town square",
+            "menbers_ids": 41
+        },
+        {
+            "name": 12,
+            "id": "Town square",
+            "menbers_ids": 23
         }
     ],
     "messages": [
@@ -126,6 +140,20 @@
             "sender_id": 13,
             "channel": "v",
             "content": 41
+        },
+        {
+            "id": 14,
+            "reception_date": "2026-01-20T16:59:49.968381",
+            "sender_id": null,
+            "channel": 1,
+            "content": "hello"
+        },
+        {
+            "id": 15,
+            "reception_date": "2026-01-20T17:00:00.615757",
+            "sender_id": null,
+            "channel": 3,
+            "content": "BYE"
         }
     ]
 }
