@@ -1,9 +1,9 @@
 from datetime import datetime
 import json
 import requests
+import argparse
 
-
-
+    
 
 class User:
     def __init__(self, id:int,name:str):
@@ -27,43 +27,67 @@ class Messages:
         self.reception_date=reception_date
 
 class LocalStorage:
+    def __init__(self, file_path:str):
+        self.file_path=file_path
+
     def load_server(self):
         with open("server.json", "r") as fichier:
             server=json.load(fichier)
-        return server
-    def get_users(self) -> list[User]:
-        server = self.load_server()
-        print("les utilisaeurs sont:")
-        user_list:list[User]=[]
+            self.user_list:list[User]=[]
+            self.channel_list:list[Channels]=[]
+            self.message_list:list[Messages]=[]
         for user in server['users']:
-            user_list.append (User(user['id'],user['name']))
-        return user_list
+            self.user_list.append (User(user['id'],user['name']))
+           
+        for channel in server['channels']:
+            self.channel_list.append (Channels(channel['name'],channel['id'],channel['menbers_ids'] ))
+            
+        for message in server['messages']:
+            self.message_list.append (Messages (message['content'],message['reception_date'],message ['sender_id'],message ['id'], message['channel']))
+
+    def sauvegarder(new_server):
+        server2 = {}
+        dico_user_list:list[dict]=[]
+        for user in users:
+            dico_user_list.append({'name': user.name, 'id': user.id})
+            server2['users']= dico_user_list
+            dico_channel_list:list[dict]=[]
+        for channel in server['channels']:
+            dico_channel_list.append({'name': channel.name, 'id': channel.id, 'menbers_ids': channel.menbers_ids})
+            server2['channels']= dico_channel_list
+            dico_mess_list:list[dict]=[]
+        for mess in server['messages']:
+            dico_mess_list.append({ "id": mess.id, "reception_date": mess.reception_date, "sender_id": mess.sender_id, "channel": mess.channel, "content": mess.content})
+            server2['messages']=dico_mess_list
+        with open('server.json', 'w') as fichier:
+            json.dump(server2, fichier, indent=4)
+
+            
+    def get_users(self) -> list[User]:
+        self.load_server()
+        return self.user_list
 
     def create_users(self,name):
         server=self.load_server()
         user_ids=[]
-        for user in users:
+        for user in self.user_list:
             user_ids.append(user.id)
         newid= max(user_ids)+1
         usnew= User (newid,name )
-        users.append( usnew)
-        sauvegarder(server)
+        self.user_list.append( usnew)
+        self.sauvegarder(server)
 
     def get_channels(self):
-        server = self.load_server()
-        print("les utilisaeurs sont:")
-        channel_list:list[Channels]=[]
-        for channel in server['channels']:
-            channel_list.append (Channels(channel['name'],channel['id'],channel['menbers_ids'] ))
-            server['channels']=channel_list
-            return channel_list
-    def create_channels(self, name:str):
+        self.load_server()
+        return self.channel_list
+    
+    def create_channels(self, name:str): # attention name pas utilisé
         server=self.load_server()
         channel_ids=[]
-        for channel in server["channels"]:
+        for channel in self.channel_list:
             channel_ids.append(channel['id'])
         newgroup_id= max(channel_ids)+1
-        sauvegarder(server)
+        self.sauvegarder(server)
         return newgroup_id
     
     def join_channel(self,channel_id,id_pers):
@@ -73,10 +97,12 @@ class LocalStorage:
                 nomid=channel.name
         gpnew=Channels(channel_id, nomid,id_pers)
         channels.append (gpnew)
-        sauvegarder(server)
+        self.sauvegarder(server)
         
 
 class RemoteStorage:
+    def __init__(self, url:str):
+        self.url=url
 
     def get_users(self) -> list[User]:
         response = requests.get('https://groupe5-python-mines.fr/users')
@@ -118,46 +144,28 @@ class RemoteStorage:
         print(envoi.text)
 
 
-storage=LocalStorage()
 
 
-with open("server.json", "r") as fichier:
-    server=json.load(fichier)
-    user_list:list[User]=[]
-    channel_list:list[Channels]=[]
-    message_list:list[Messages]=[]
-    for user in server['users']:
-        user_list.append (User(user['id'],user['name']))
-        server['users']=user_list
-    for channel in server['channels']:
-        channel_list.append (Channels(channel['name'],channel['id'],channel['menbers_ids'] ))
-        server['channels']=channel_list
-    for message in server['messages']:
-        print (message)
-        message_list.append (Messages (message['content'],message['reception_date'],message ['sender_id'],message ['id'], message['channel']))
-        server['messages']=message_list
 
-users= server['users']
-channels= server['channels']
-messages= server['messages']
 
-def sauvegarder(new_server):
-    server2 = {}
-    dico_user_list:list[dict]=[]
-    for user in server['users']:
-        dico_user_list.append({'name': user.name, 'id': user.id})
-        server2['users']= dico_user_list
-        dico_channel_list:list[dict]=[]
-    for channel in server['channels']:
-        dico_channel_list.append({'name': channel.name, 'id': channel.id, 'menbers_ids': channel.menbers_ids})
-        server2['channels']= dico_channel_list
-        dico_mess_list:list[dict]=[]
-    for mess in server['messages']:
-        dico_mess_list.append({ "id": mess.id, "reception_date": mess.reception_date, "sender_id": mess.sender_id, "channel": mess.channel, "content": mess.content})
-        server2['messages']=dico_mess_list
-    print(server2)
-    with open('server.json', 'w') as fichier:
-        json.dump(server2, fichier, indent=4)
+
+
+
+parser = argparse.ArgumentParser(description="programme qui permet d'envoyer des messages d'un ordinateur à l'autre en passent par un serveur")
+parser.add_argument('--storage-file', type=str)
+parser.add_argument('--url', type=str)
+
+args = parser.parse_args()
+
+if args.storage_file:
+    storage = LocalStorage(args.storage_file)
+elif args.url:
+    storage = RemoteStorage(args.url)
+else:
+    parser.print_help() 
+
+
+
 
 
 def id_name(nom): #donne l'identifiant à partir du nom
@@ -302,17 +310,5 @@ def channel():
             storage.join_channel(channel_id,id_pers)
 
     
+
 menu()
-
-import argparse
-
-def main():
-    parser = argparse.ArgumentParser(description="programme qui permet d'envoyer des messages d'un ordinateur à l'autre en passent par un serveur")
-
-
-    args = parser.parse_args()
-
-    print("Le programme s'est exécuté normalement.")
-
-if __name__ == "__main__":
-    main()
