@@ -2,7 +2,6 @@ from datetime import datetime
 import json
 import requests
 import argparse
-
     
 
 class User:
@@ -45,18 +44,18 @@ class LocalStorage:
         for message in server['messages']:
             self.message_list.append (Messages (message['content'],message['reception_date'],message ['sender_id'],message ['id'], message['channel']))
 
-    def sauvegarder(new_server):
+    def sauvegarder(self):
         server2 = {}
         dico_user_list:list[dict]=[]
-        for user in users:
+        for user in self.user_list:
             dico_user_list.append({'name': user.name, 'id': user.id})
             server2['users']= dico_user_list
             dico_channel_list:list[dict]=[]
-        for channel in server['channels']:
+        for channel in self.channel_list:
             dico_channel_list.append({'name': channel.name, 'id': channel.id, 'menbers_ids': channel.menbers_ids})
             server2['channels']= dico_channel_list
             dico_mess_list:list[dict]=[]
-        for mess in server['messages']:
+        for mess in self.message_list:
             dico_mess_list.append({ "id": mess.id, "reception_date": mess.reception_date, "sender_id": mess.sender_id, "channel": mess.channel, "content": mess.content})
             server2['messages']=dico_mess_list
         with open('server.json', 'w') as fichier:
@@ -96,8 +95,12 @@ class LocalStorage:
             if channel.id==channel_id:
                 nomid=channel.name
         gpnew=Channels(channel_id, nomid,id_pers)
-        channels.append (gpnew)
+        self.channel_list.append (gpnew)
         self.sauvegarder(server)
+
+    def get_messages(self):
+        self.load_server()
+        return self.message_list
         
 
 class RemoteStorage:
@@ -144,8 +147,146 @@ class RemoteStorage:
         print(envoi.text)
 
 
+class UserInterface:
+
+    def id_name(self,nom): #donne l'identifiant à partir du nom
+        for user in (storage.get_users()):
+            if nom==user.name:
+                idnom=user.id
+                return idnom
+    def name_id(self,id):#donne le nom a parti de l'identifiant
+        for user in (storage.get_users()):
+            if id==user.id:
+                nomid=user.name
+                return nomid
+        
+    def menu(self):
+        print('=== Messenger ===')
+        print( '1. See users')
+        print('2. See channels')
+        print('3. Send messages')
+        print('x. Leave')
+        print('================')
+        print()
+        choice = input('Select an option: ')
+        if choice == 'x':
+            print('Bye!')
+        
+        elif choice =='1':
+            self.user()
+
+        elif choice=='2':
+            self.channel()
+        elif choice=='3':
+            user_id=self.id_name(input('votre nom?'))
+            self.newmessages(user_id)
+        else:
+            print('Unknown option:', choice)
+
+    def add_menber(self,channel_id):   
+        for user in storage.get_users():
+            print (user.id, user.name)
+
+        nb_pers= int(input('combien utilisateurs'))
+        for i in range (0,nb_pers):
+            id_pers=int(input('Id du membre')) 
+            storage.join_channel(channel_id,id_pers)
 
 
+    def user(self):
+        for user in storage.get_users():
+            print (user.id, user.name) 
+        print ('n.create user')
+        print ('x.Main menu')
+        choice1 = input('Enter a choice and press ENTER: ')
+        if choice1 =='x':
+            self.menu()
+        if choice1=='n':
+            name=input('Name: ')
+            storage.create_users(name)
+
+    def newgroup(self):
+        groupname= input ('Group Name')
+        for user in storage.get_users():
+            print (user.id, user.name) 
+        id_menbres=[]
+        nb_pers= int(input('combien utilisateurs'))
+        for i in range (0,nb_pers):
+            id_pers=int(input('Id du membre')) 
+            id_menbres.append(id_pers)
+        channel_ids=[]
+        for channel in (storage.get_channels()):
+            channel_ids.append(channel.id)
+        newgroup_id= max(channel_ids)+1
+        gpnew=Channels(newgroup_id,groupname,id_menbres)
+        storage.get_channels().append (gpnew)
+        storage.sauvegarder()
+        print(storage.get_channels())
+
+    def newmessages(self,user_id):
+        channels=storage.get_channels()
+        print('voici les groupes ou vous etes:')
+        for channel in channels:
+            if user_id in channel.menbers_ids:
+                print(channel.id,channel.name,channel.menbers_ids)
+
+        gp = int(input('Donner l \'indentifiant du groupe '))
+        texte= input('write a message')
+        new_message= Messages(gp, int(len(storage.get_messages)+1),texte,user_id, datetime.now().isoformat())
+        storage.get_messages().append(new_message)
+        storage.sauvegarder()
+        print("1.send another message")
+        print("x. return")
+        choicem=input('Enter a choice and press ENTER:' )
+        if choicem=='1':
+            self.newmessages(user_id)
+        elif choicem=='x':
+            self.menu()
+
+    def channel(self):
+        channels=storage.get_channels()
+        for channel in channels:
+            print (channel.id, channel.name) 
+        
+        print("1.choose group")
+        print("2.New group")
+        print("x. menu ")
+        choice2 = input('Enter a choice and press ENTER: ')
+        if choice2=='1':  
+            choice22=int(input("group number"))
+            for channel in channels: #on parcourt les channels si on en un id qui match on sort de la boucle avec break ( on a utilisé un for else) 
+                if choice22 == channel.id:
+                    print(channel)
+                    for ids in channel.menbers_ids: # on transforme l'id en nom
+                        print(self.name_id(ids))
+                        for message in storage.get_messages:
+                            if choice22== message.channel:  #on affiche le message 
+                                print (message.content)
+                        print("1.add menbers")
+                        print("x. menu ")
+                        choice3 = input('Enter a choice and press ENTER: ')
+                        if choice3=='1':
+                            self.add_menber(choice22)
+                        if choice3=='x':
+                            self.menu()
+                        break
+            else:  
+                print("no group")
+
+            
+        elif choice2== 'x':
+            self.menu()
+        elif choice2 == '2':
+            name=input('Name: ')
+            channel_id=storage.create_channels(name)
+
+            for user in storage.get_users():
+                print (user.id, user.name)
+            
+            nb_pers= int(input('combien utilisateurs'))
+            for i in range (0,nb_pers):
+                id_pers=int(input('Id du membre')) 
+                storage.join_channel(channel_id,id_pers)
 
 
 
@@ -168,147 +309,7 @@ else:
 
 
 
-def id_name(nom): #donne l'identifiant à partir du nom
-    for user in users:
-        if nom==user.name:
-            idnom=user.id
-            return idnom
-def name_id(id):#donne le nom a parti de l'identifiant
-    for user in users:
-        if id==user.id:
-            nomid=user.name
-            return nomid
-        
-def menu():
-    print('=== Messenger ===')
-    print( '1. See users')
-    print('2. See channels')
-    print('3. Send messages')
-    print('x. Leave')
-    print('================')
-    print()
-    choice = input('Select an option: ')
-    if choice == 'x':
-        print('Bye!')
-    
-    elif choice =='1':
-        user()
-
-    elif choice=='2':
-        channel()
-    elif choice=='3':
-        user_id=id_name(input('votre nom?'))
-        newmessages(user_id)
-    else:
-        print('Unknown option:', choice)
-
-def add_menber(channel_id):   
-    for user in storage.get_users():
-        print (user.id, user.name)
-
-    nb_pers= int(input('combien utilisateurs'))
-    for i in range (0,nb_pers):
-        id_pers=int(input('Id du membre')) 
-        storage.join_channel(channel_id,id_pers)
-
-
-
-
-def user():
-    for user in storage.get_users():
-        print (user.id, user.name) 
-    print ('n.create user')
-    print ('x.Main menu')
-    choice1 = input('Enter a choice and press ENTER: ')
-    if choice1 =='x':
-          menu()
-    if choice1=='n':
-        name=input('Name: ')
-        storage.create_users(name)
-
-def newgroup():
-    groupname= input ('Group Name')
-    for user in storage.get_users():
-        print (user.id, user.name) 
-    id_menbres=[]
-    nb_pers= int(input('combien utilisateurs'))
-    for i in range (0,nb_pers):
-        id_pers=int(input('Id du membre')) 
-        id_menbres.append(id_pers)
-    channel_ids=[]
-    for channel in channels:
-        channel_ids.append(channel.id)
-    newgroup_id= max(channel_ids)+1
-    gpnew=Channels(newgroup_id,groupname,id_menbres)
-    channels.append (gpnew)
-    sauvegarder(server)
-    print(channels)
-
-def newmessages(user_id):
-    channels=storage.get_channels()
-    print('voici les groupes ou vous etes:')
-    for channel in channels:
-        if user_id in channel.menbers_ids:
-            print(channel.id,channel.name,channel.menbers_ids)
-
-    gp = int(input('Donner l \'indentifiant du groupe '))
-    texte= input('write a message')
-    new_message= Messages(gp, int(len(messages)+1),texte,user_id, datetime.now().isoformat())
-    messages.append(new_message)
-    sauvegarder(server)
-    print("1.send another message")
-    print("x. return")
-    choicem=input('Enter a choice and press ENTER:' )
-    if choicem=='1':
-        newmessages(user_id)
-    elif choicem=='x':
-        menu()
-
-def channel():
-    channels=storage.get_channels()
-    for channel in channels:
-        print (channel.id, channel.name) 
-    
-    print("1.choose group")
-    print("2.New group")
-    print("x. menu ")
-    choice2 = input('Enter a choice and press ENTER: ')
-    if choice2=='1':  
-        choice22=int(input("group number"))
-        for channel in channels: #on parcourt les channels si on en un id qui match on sort de la boucle avec break ( on a utilisé un for else) 
-            if choice22 == channel.id:
-                print(channel)
-                for ids in channel.menbers_ids: # on transforme l'id en nom
-                    print(name_id(ids))
-                    for message in messages:
-                        if choice22== message.channel:  #on affiche le message 
-                            print (message.content)
-                    print("1.add menbers")
-                    print("x. menu ")
-                    choice3 = input('Enter a choice and press ENTER: ')
-                    if choice3=='1':
-                        add_menber(choice22)
-                    if choice3=='x':
-                        menu()
-                    break
-        else:  
-            print("no group")
-
-        
-    elif choice2== 'x':
-        menu()
-    elif choice2 == '2':
-        name=input('Name: ')
-        channel_id=storage.create_channels(name)
-
-        for user in storage.get_users():
-            print (user.id, user.name)
-        
-        nb_pers= int(input('combien utilisateurs'))
-        for i in range (0,nb_pers):
-            id_pers=int(input('Id du membre')) 
-            storage.join_channel(channel_id,id_pers)
 
     
 
-menu()
+UserInterface.menu()
