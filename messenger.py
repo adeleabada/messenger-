@@ -291,19 +291,19 @@ class UserInterface:
 
 
 
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="programme qui permet d'envoyer des messages d'un ordinateur à l'autre en passent par un serveur")
+    parser.add_argument('--storage-file', type=str)
+    parser.add_argument('--url', type=str)
 
-parser = argparse.ArgumentParser(description="programme qui permet d'envoyer des messages d'un ordinateur à l'autre en passent par un serveur")
-parser.add_argument('--storage-file', type=str)
-parser.add_argument('--url', type=str)
+    args = parser.parse_args()
 
-args = parser.parse_args()
-
-if args.storage_file:
-    storage = LocalStorage(args.storage_file)
-elif args.url:
-    storage = RemoteStorage(args.url)
-else:
-    parser.print_help() 
+    if args.storage_file:
+        storage = LocalStorage(args.storage_file)
+    elif args.url:
+        storage = RemoteStorage(args.url)
+    else:
+        parser.print_help() 
 
 
 
@@ -312,4 +312,3 @@ else:
 
     
 
-UserInterface.menu()
