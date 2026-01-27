@@ -30,7 +30,7 @@ class LocalStorage:
         self.file_path=file_path
 
     def load_server(self):
-        with open("server.json", "r") as fichier:
+        with open(self.file_path, "r") as fichier:
             server=json.load(fichier)
             self.user_list:list[User]=[]
             self.channel_list:list[Channels]=[]
@@ -67,14 +67,14 @@ class LocalStorage:
         return self.user_list
 
     def create_users(self,name):
-        server=self.load_server()
+        server = self.load_server()
         user_ids=[]
         for user in self.user_list:
             user_ids.append(user.id)
         newid= max(user_ids)+1
         usnew= User (newid,name )
         self.user_list.append( usnew)
-        self.sauvegarder(server)
+        self.sauvegarder()
 
     def get_channels(self):
         self.load_server()
