@@ -19,6 +19,14 @@
         {
             "name": "Emilie",
             "id": 51
+        },
+        {
+            "name": "colin",
+            "id": 52
+        },
+        {
+            "name": "Adele",
+            "id": 53
         }
     ],
     "channels": [
@@ -27,133 +35,126 @@
             "id": 12,
             "menbers_ids": [
                 41,
-                23
+                23,
+                51,
+                52
             ]
         },
         {
             "name": "Al & Ro",
             "id": 13,
             "menbers_ids": [
-                "41",
-                "49"
+                41,
+                49
             ]
         },
         {
-            "name": 12,
-            "id": "Town square",
-            "menbers_ids": 41
-        },
-        {
-            "name": 12,
-            "id": "Town square",
-            "menbers_ids": 23
+            "name": "AIX",
+            "id": 14,
+            "menbers_ids": [
+                50,
+                52
+            ]
         }
     ],
     "messages": [
         {
-            "id": "025",
-            "reception_date": 12,
-            "sender_id": 18,
-            "channel": "Hi",
-            "content": 41
+            "id": 12,
+            "reception_date": "2025-12-09T15:00:33.586470",
+            "sender_id": 41,
+            "channel": 12,
+            "content": "Hi"
         },
         {
-            "id": "2025-12-09T15:00:33.586470",
-            "reception_date": 13,
-            "sender_id": 2,
-            "channel": "hello",
-            "content": 49
-        },
-        {
-            "id": "2025-12-09T15:07:13.055481",
-            "reception_date": 13,
-            "sender_id": 3,
-            "channel": "",
-            "content": 49
-        },
-        {
-            "id": "2025-12-09T15:07:34.539757",
-            "reception_date": 13,
-            "sender_id": 4,
-            "channel": "hello 2",
-            "content": 49
-        },
-        {
-            "id": "2025-12-09T15:08:17.759801",
-            "reception_date": 13,
-            "sender_id": 5,
-            "channel": "bonjour",
-            "content": 49
-        },
-        {
-            "id": "2025-12-09T15:09:08.511604",
-            "reception_date": 13,
-            "sender_id": 6,
-            "channel": "hi",
-            "content": 49
-        },
-        {
-            "id": "2025-12-09T15:13:20.805639",
-            "reception_date": 13,
-            "sender_id": 7,
-            "channel": "hello",
-            "content": 49
-        },
-        {
-            "id": "2025-12-09T15:40:47.212324",
-            "reception_date": 13,
-            "sender_id": 8,
-            "channel": "",
-            "content": 49
-        },
-        {
-            "id": "2025-12-09T15:59:49.131902",
-            "reception_date": 13,
-            "sender_id": 9,
-            "channel": "hey",
-            "content": 49
-        },
-        {
-            "id": "2025-12-09T16:20:25.606844",
-            "reception_date": 13,
-            "sender_id": 10,
-            "channel": "hello",
-            "content": 49
-        },
-        {
-            "id": "2025-12-09T16:25:43.009652",
-            "reception_date": 12,
-            "sender_id": 11,
-            "channel": " aurevoir",
-            "content": 41
-        },
-        {
-            "id": "2025-12-09T16:33:26.173180",
-            "reception_date": 12,
-            "sender_id": 12,
-            "channel": "BLABLA",
-            "content": 41
-        },
-        {
-            "id": "2025-12-09T16:34:25.553212",
-            "reception_date": 12,
-            "sender_id": 13,
-            "channel": "v",
-            "content": 41
-        },
-        {
-            "id": 14,
-            "reception_date": "2026-01-20T16:59:49.968381",
-            "sender_id": null,
-            "channel": 1,
+            "id": 13,
+            "reception_date": "2025-12-09T15:07:13.055481",
+            "sender_id": 49,
+            "channel": 13,
             "content": "hello"
         },
         {
+            "id": 14,
+            "reception_date": "2025-12-09T15:07:34.539757",
+            "sender_id": 49,
+            "channel": 13,
+            "content": "hello 2"
+        },
+        {
             "id": 15,
-            "reception_date": "2026-01-20T17:00:00.615757",
+            "reception_date": "2025-12-09T15:08:17.759801",
+            "sender_id": 49,
+            "channel": 13,
+            "content": "bonjour"
+        },
+        {
+            "id": 16,
+            "reception_date": "2025-12-09T15:09:08.511604",
+            "sender_id": 49,
+            "channel": 13,
+            "content": "hi"
+        },
+        {
+            "id": 17,
+            "reception_date": "2025-12-09T15:59:49.131902",
+            "sender_id": 49,
+            "channel": 13,
+            "content": "hey"
+        },
+        {
+            "id": 18,
+            "reception_date": "2025-12-09T16:25:43.009652",
+            "sender_id": 41,
+            "channel": 12,
+            "content": "aurevoir"
+        },
+        {
+            "id": 19,
+            "reception_date": "2025-12-09T16:33:26.173180",
+            "sender_id": 41,
+            "channel": 12,
+            "content": "BLABLA"
+        },
+        {
+            "id": 20,
+            "reception_date": "2025-12-09T16:34:25.553212",
+            "sender_id": 41,
+            "channel": 12,
+            "content": "v"
+        },
+        {
+            "id": 10,
+            "reception_date": "2026-02-26T21:15:55.431536",
+            "sender_id": 52,
+            "channel": 14,
+            "content": "coucou ele"
+        },
+        {
+            "id": 11,
+            "reception_date": "2026-02-26T23:28:05.124383",
+            "sender_id": 50,
+            "channel": 14,
+            "content": "yo"
+        },
+        {
+            "id": 21,
+            "reception_date": "2026-02-27T00:49:53.006407",
+            "sender_id": 52,
+            "channel": 14,
+            "content": "j'ai bient\u00f4t fini"
+        },
+        {
+            "id": 22,
+            "reception_date": "2026-03-01T15:04:29.735318",
             "sender_id": null,
-            "channel": 3,
-            "content": "BYE"
+            "channel": 1,
+            "content": " Hello"
+        },
+        {
+            "id": 23,
+            "reception_date": "2026-03-01T15:04:43.490209",
+            "sender_id": null,
+            "channel": 1,
+            "content": "Bye"
         }
     ]
 }
