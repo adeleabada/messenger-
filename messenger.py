@@ -51,7 +51,13 @@ class Messages:
         self.content=content
 
         self.sender_id=sender_id
-
+        # Le type datetime de la bibliothèque datetime est plus
+        # adapté pour représenter des horodatages. Il vous permet
+        # notamment de gérer l'affichage de façon unifiée, quelle qu'ait
+        # été la source des données.
+        # Son utilisation demande de convertir les str que vous recevez
+        # en datetime, puis d'utiliser datetime dans tout le programme,
+        # puis de convertir datetime en str lors de l'affichage.
         self.reception_date=reception_date
 
 
@@ -137,10 +143,12 @@ class LocalStorage:
         return self.user_list
 
 
+    # N'oubliez pas de typer toutes vos fonctions
+    def create_users(self,name: str) -> None:
 
-    def create_users(self,name):
-
-        server=self.load_server()
+        # Pas besoin d'affecter le résultat de load_server
+        # à une variable (d'ailleurs load_server ne renvoie rien)
+        self.load_server()
 
         user_ids=[]
 
@@ -158,7 +166,7 @@ class LocalStorage:
 
 
 
-    def get_channels(self):
+    def get_channels(self) -> list[Channels]:
 
         self.load_server()
 
@@ -166,9 +174,9 @@ class LocalStorage:
 
     
 
-    def create_channels(self, name:str):
+    def create_channels(self, name:str) -> int:
 
-        server=self.load_server()
+        self.load_server()
 
         channel_ids=[]
 
@@ -188,9 +196,9 @@ class LocalStorage:
 
     
 
-    def join_channel(self,channel_id,id_pers):
+    def join_channel(self,channel_id: int,id_pers: int) -> None:
 
-        server=self.load_server()
+        self.load_server()
 
         for channel in self.channel_list:
 
@@ -204,7 +212,7 @@ class LocalStorage:
 
 
 
-    def get_messages_from_channel_id(self, channel_id):
+    def get_messages_from_channel_id(self, channel_id: int) -> list[Messages]:
 
         self.load_server()
 
@@ -220,7 +228,7 @@ class LocalStorage:
 
 
 
-    def get_messages(self):
+    def get_messages(self) -> list[Messages]:
 
         self.load_server()
 
@@ -228,9 +236,9 @@ class LocalStorage:
 
     
 
-    def new_message(self, id:int, sender:int, texte:str):
+    def new_message(self, id:int, sender:int, texte:str) -> None:
 
-        server=self.load_server()
+        self.load_server()
 
         message_ids=[]
 
@@ -259,8 +267,13 @@ class RemoteStorage:
 
 
     def get_users(self) -> list[User]:
-
-        response = requests.get('https://groupe5-python-mines.fr/users')
+        # Maintenant que vous avez stocké l'URL de base dans un attribut
+        # self.url, il vaut mieux vous en servir ici.
+        response = requests.get(f'{self.url}/users')
+        # N'oubliez pas de vérifier le code de retour HTTP,
+        # soit avec response.raise_for_status(), soit manuellement
+        # avec une vérification de repsonse.status_code
+        response.raise_for_status()
 
         data = json.loads(response.text)
 
@@ -274,11 +287,11 @@ class RemoteStorage:
 
     
 
-    def create_users(self,name):
+    def create_users(self,name: str) -> None:
 
         jsonname={'name':name}
 
-        envoi=requests.post('https://groupe5-python-mines.fr/users/create', json=jsonname)
+        envoi=requests.post(f'{self.url}/users/create', json=jsonname)
 
         if envoi.status_code==200:
 
@@ -292,7 +305,8 @@ class RemoteStorage:
 
     def get_channels(self)->list[Channels]:
 
-        response_gp = requests.get('https://groupe5-python-mines.fr/channels')
+        response_gp = requests.get(f'{self.url}/channels')
+        response_gp.raise_for_status()
 
         data = json.loads(response_gp.text)
 
@@ -302,7 +316,7 @@ class RemoteStorage:
 
         for channel in data:
 
-            menbersid=requests.get(f'https://groupe5-python-mines.fr/channels/{channel["id"]}/members')
+            menbersid=requests.get(f'{self.url}/channels/{channel["id"]}/members')
 
             data_members=json.loads(menbersid.text)
 
@@ -312,6 +326,7 @@ class RemoteStorage:
 
             count += 1
 
+            # TB utilisation de '\r'
             print(f"loading {len(data)} groups... ({count}/{len(data)})", end='\r')
 
         print()
@@ -320,11 +335,12 @@ class RemoteStorage:
 
     
 
-    def create_channels(self, name)-> int:
+    def create_channels(self, name: str)-> int:
 
         jsonname={'name':name}
 
-        send=requests.post('https://groupe5-python-mines.fr/channels/create', json=jsonname)
+        send=requests.post(f'{self.url}/channels/create', json=jsonname)
+        send.raise_for_status()
 
         channel_dict=send.json()
 
@@ -332,11 +348,11 @@ class RemoteStorage:
 
 
 
-    def join_channel(self,id:int,menbers_id:int):
+    def join_channel(self,id:int,menbers_id:int) -> None:
 
         menbers_id_dict={'user_id': menbers_id}
 
-        envoi=requests.post(f'https://groupe5-python-mines.fr/channels/{id}/join', json=menbers_id_dict)
+        envoi=requests.post(f'{self.url}/channels/{id}/join', json=menbers_id_dict)
 
         if envoi.status_code==200:
 
@@ -348,25 +364,10 @@ class RemoteStorage:
 
 
 
-    def get_messages(self):
+    def get_messages(self) -> list[Messages]:
 
-        response_mess = requests.get('https://groupe5-python-mines.fr/messages')
-
-        data = json.loads(response_mess.text)
-
-        messages: list[Messages] = []
-
-        for m in data:
-
-            messages.append(Messages(int(m['channel_id']), int(m['id']), m['content'], int(m['sender_id']), m['reception_date']))
-
-        return messages
-
-
-
-    def get_messages_from_channel_id(self, channel_id):
-
-        response_mess = requests.get(f'https://groupe5-python-mines.fr/channels/{channel_id}/messages')
+        response_mess = requests.get(f'{self.url}/messages')
+        response_mess.raise_for_status()
 
         data = json.loads(response_mess.text)
 
@@ -380,11 +381,28 @@ class RemoteStorage:
 
 
 
-    def new_message(self, id:int, sender:int, texte: str):
+    def get_messages_from_channel_id(self, channel_id: int) -> list[Messages]:
+
+        response_mess = requests.get(f'{self.url}/channels/{channel_id}/messages')
+        response_mess.raise_for_status()
+
+        data = json.loads(response_mess.text)
+
+        messages: list[Messages] = []
+
+        for m in data:
+
+            messages.append(Messages(int(m['channel_id']), int(m['id']), m['content'], int(m['sender_id']), m['reception_date']))
+
+        return messages
+
+
+
+    def new_message(self, id:int, sender:int, texte: str) -> None:
 
         group_id_dict={'sender_id':sender,"content":texte}
 
-        envoi=requests.post(f'https://groupe5-python-mines.fr/channels/{id}/messages/post', json=group_id_dict)
+        envoi=requests.post(f'{self.url}/channels/{id}/messages/post', json=group_id_dict)
 
         if envoi.status_code==200:
 
@@ -402,8 +420,18 @@ class UserInterface:
 
 
 
-    def id_name(self,nom): #donne l'identifiant à partir du nom
-
+    def id_name(self,nom: str) -> int | None: #donne l'identifiant à partir du nom
+        # Vous utilisez une variable globale (storage), ce qui est
+        # souvent source d'erreurs car il est difficile de savoir
+        # où elle peut être modifiée dans un gros programme.
+        # En règle générale, toutes les variables que vous utilisez
+        # dans une méthode doivent :
+        # - soit être dans les paramètres de la méthode
+        # - soit être définies dans le corps de la méthode
+        # Ici, il faudrait donc transformer storage en attribut,
+        # donc créer une méthode __init__(self, storage) qui remplirait
+        # self.storage. Vous pourriez ensuite aisément utiliser
+        # self.storage dans toutes vos méthodes.
         for user in (storage.get_users()):
 
             if nom==user.name:
@@ -414,7 +442,7 @@ class UserInterface:
 
     
 
-    def name_id(self,id):#donne le nom a parti de l'identifiant
+    def name_id(self,id: int) -> str | None:#donne le nom a parti de l'identifiant
 
         users = storage.get_users()
 
@@ -465,7 +493,8 @@ class UserInterface:
             self.channel()
 
         elif choice=='3':
-
+            # Pensez bien à vérifier si la valeur entrée par l'utilisateur
+            # est valide, en vérifiant "if user_id is not None" par exemple.
             user_id=self.id_name(input('Your name?'))
 
             self.newmessages(user_id)
@@ -476,7 +505,7 @@ class UserInterface:
 
 
 
-    def add_menber(self,channel_id):   
+    def add_menber(self,channel_id: int) -> None:
 
         for user in storage.get_users():
 
@@ -486,7 +515,9 @@ class UserInterface:
 
         nb_pers= int(input('How many users?'))
 
-        for i in range (0,nb_pers):
+        # Par convention, si une variable de boucle n'est pas utilisée,
+        # on la remplace par le caractère _
+        for _ in range (0,nb_pers):
 
             id_pers=int(input('menber id: ')) 
 
@@ -532,7 +563,7 @@ class UserInterface:
 
         nb_pers= int(input('Combien utilisateurs'))
 
-        for i in range (0,nb_pers):
+        for _ in range (0,nb_pers):
 
             id_pers=int(input('Id du membre')) 
 
@@ -556,7 +587,7 @@ class UserInterface:
 
 
 
-    def newmessages(self,user_id):
+    def newmessages(self,user_id: int):
 
         channels=storage.get_channels()
 
@@ -568,6 +599,7 @@ class UserInterface:
                 print(channel.id, channel.name, channel.menbers_ids)
                 found = True
 
+        # TB d'avoir pensé à faire cette vérification
         if not found:
             print("user not found, create new user")
             self.menu()
@@ -614,6 +646,9 @@ class UserInterface:
 
         if choice2=='1':  
 
+            # Il y a pas mal de conditions et boucles imbriquées
+            # ici, et beaucoup de choix utilisateurs. Il vaut
+            # mieux créer des fonctions intermédiaires.
             choice22=int(input("Group number: "))
 
             for channel in channels: #on parcourt les channels si on en un id qui match on sort de la boucle avec break ( on a utilisé un for else) 
@@ -634,10 +669,13 @@ class UserInterface:
 
                     print("Messages du groupe:")
 
+                    # Il vaut mieux trier les messages par
+                    # reception_date pour être sure de les afficher
+                    # dans le bon ordre
                     for message in messages:
-
+                        # TB d'avoir récupéré le nom
                         name_sender=self.name_id(message.sender_id)
-
+                        # N'oubliez pas d'afficher la reception_date
                         print(f"[{name_sender}]: {message.content}")
 
                     print("1. Add menbers")
